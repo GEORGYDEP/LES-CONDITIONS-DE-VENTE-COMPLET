@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Conditions de vente — Missions</title>
+<title>Conditions de vente — Partie 1</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* ============ KIT VISUEL — jetons ============ */
@@ -378,6 +378,31 @@ button.tag, button.gap { font-family:inherit; color:var(--text); }
 .t-sub { font-size:.7rem; color:var(--gold); font-weight:800; }
 .t-name { font-weight:800; font-size:.95rem; }
 .fiche .f-foot { margin-top:48px; }
+
+/* ============ BILAN PAR CRITÈRES (CONVENTIONS §4.11) ============ */
+.crit-fiche { max-width:640px; margin-top:22px; }
+.crit-fiche .f-who { font-size:.8rem; color:#6b7288; margin:-6px 0 10px; }
+.crit-legend { font-size:.74rem; color:#4a5068; margin-bottom:14px; line-height:1.6; display:flex; flex-wrap:wrap; gap:4px 14px; }
+.crit { border:1px solid #e2ddcd; border-radius:10px; padding:12px 14px; margin-bottom:10px; background:#fff; }
+.crit-h { display:flex; justify-content:space-between; align-items:flex-start; gap:6px 10px; flex-wrap:wrap; margin-bottom:6px; }
+.crit-n { font-weight:800; font-size:.93rem; color:#1a1d29; line-height:1.35; }
+.stt { font-size:.72rem; font-weight:800; padding:3px 9px; border-radius:20px; white-space:nowrap; }
+.st-ok { background:#dcf7ea; color:#11704a; } .st-mid { background:#ffedd5; color:#9a4a07; } .st-ko { background:#ffe1e7; color:#b01f38; }
+.ind-list { list-style:none; }
+.ind { padding:8px 0 6px; border-top:1px dashed #e2ddcd; font-size:.85rem; line-height:1.45; color:#1a1d29; }
+.ind-row { display:flex; justify-content:space-between; gap:10px; }
+.ind-pct { font-family:'Space Mono',monospace; font-size:.76rem; color:#6b7288; white-space:nowrap; }
+.revoir { margin-top:5px; font-size:.8rem; color:#6b3d00; background:#fff4d9; border-left:3px solid #f0a020; border-radius:6px; padding:6px 9px; }
+.crit-foot { font-size:.82rem; color:#4a5068; margin-top:8px; line-height:1.5; }
+.next-part { font-size:.86rem; color:var(--text2); margin-top:12px; }
+.lvl-inds { text-align:left; background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin-top:16px; }
+.lvl-inds h4 { font-size:.85rem; font-weight:800; color:var(--gold); margin-bottom:6px; }
+.lvl-inds ul { list-style:none; }
+.lvl-inds li { display:flex; gap:10px; font-size:.87rem; line-height:1.45; padding:6px 0; border-top:1px solid var(--border); }
+.lvl-inds li:first-child { border-top:none; }
+.li-st { flex-shrink:0; }
+.li-rev { font-size:.8rem; color:var(--warning); margin-top:3px; }
+@media(max-width:560px) { .bilan-card.final { padding:22px 12px; } .crit-fiche { padding:20px 14px; } .crit { padding:10px 11px; } .ind-row { flex-direction:column; gap:2px; } }
 @media(max-width:768px) { .level-card { width:calc(50% - 28px); } }
 @media(max-width:560px) {
   .path::before { left:20px; }
@@ -399,9 +424,14 @@ button.tag, button.gap { font-family:inherit; color:var(--text); }
   *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
 }
 @media print {
+  body { background:#fff !important; }
+  body::before { display:none !important; }
+  .app-header, .xp-wrap, .nav-strip, .toast, .rankup, #emailOverlay, #lbOverlay, .hub-head, .path, .trophies { display:none !important; }
+  .main { position:static; padding:0; }
   body * { visibility:hidden; }
   .fiche, .fiche * { visibility:visible; }
-  .fiche { position:absolute; left:0; top:0; width:100%; box-shadow:none; }
+  .fiche { position:absolute; left:0; top:0; width:100%; max-width:none; box-shadow:none; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .crit { break-inside:avoid; }
 }
 </style>
 </head>
@@ -434,7 +464,7 @@ button.tag, button.gap { font-family:inherit; color:var(--text); }
 <header class="app-header">
   <div class="brand">
     <div class="brand-mark">🧾</div>
-    <div class="brand-title">Conditions de vente<span class="brand-tag">MISSIONS</span></div>
+    <div class="brand-title">Conditions de vente<span class="brand-tag">PARTIE 1</span></div>
   </div>
   <div class="hud">
     <span id="globalTimer" class="pill" style="display:none;color:var(--text2)"><svg class="ico"><use href="#i-clock"></use></svg><span id="timerTxt">00:00</span></span>
@@ -494,36 +524,55 @@ button.tag, button.gap { font-family:inherit; color:var(--text); }
 </div>
 <script>
 /* =====================================================================
-   CONTENU PÉDAGOGIQUE — un objet par mission, séparé du moteur
+   CONTENU PÉDAGOGIQUE — PARTIE 1 (points « La qualité », « La quantité »,
+   « Le prix et les réductions »). Séparé du moteur.
    ===================================================================== */
-const DOC_A = `<div class="doc"><div class="doc-h">Conditions générales de vente — SportAvenue.be</div>
-<p><b>Prix</b> : tous les prix sont indiqués TVAC.</p>
-<p><b>Livraison</b> : franco domicile dès 80 € d'achat ; en dessous, frais de port de 5,50 €. Délai : 3 à 5 jours ouvrables. Appareils de fitness : livraison sur rendez-vous.</p>
-<p><b>Paiement</b> : particuliers : Bancontact, Visa ou virement, à la commande. Clubs et écoles : 30 jours fin de mois.</p>
-<p><b>Réductions</b> : remise de 8 % dès 400 € d'achat. Escompte de 2 % pour les clubs et écoles qui paient dans les 10 jours suivant la date de la facture.</p>
-<p><b>Réclamations</b> : à signaler dans les 10 jours suivant la réception.</p></div>`;
+const META = {
+  title: `Conditions de vente — Partie 1`,
+  tag: `PARTIE 1`,
+  sub: `Partie 1 sur 2 — qualité, quantité, prix et réductions`,
+  desc: `Avant de conclure une vente, l'acheteur et le vendeur fixent ce qui est vendu, en quelle quantité et à quel prix. Entraîne-toi sur ces trois premières conditions de vente.`,
+  nextPart: `La Partie 2 (paiement, livraison et mission de synthèse) se fera lors d'une prochaine leçon.`
+};
 
-const DOC_B = `<div class="doc"><div class="doc-h">Conditions de vente — BricoPro Hainaut (clients professionnels)</div>
-<p><b>Prix</b> : prix HTVA.</p>
-<p><b>Livraison</b> : port dû, à charge de l'acheteur. Enlèvement gratuit au dépôt de Ghlin.</p>
-<p><b>Paiement</b> : 60 jours date de facture. Commandes sur mesure : acompte de 30 % à la commande.</p>
-<p><b>Réductions</b> : ristourne annuelle de 2 % sur le total des achats de l'année, si ce total dépasse 15 000 €. Rabais en cas de livraison incomplète ou endommagée.</p></div>`;
+/* ---------- Critères et indicateurs (CONVENTIONS §4.11) ---------- */
+const CRITERES = [
+  { id:'C1', nom:`Décrire précisément la marchandise commandée`, indicateurs:[
+    { id:'I1', texte:`Je reconnais les éléments qui décrivent la qualité d'un produit`,
+      objectif:`reconnaître les éléments qui décrivent la qualité d'un produit`,
+      chapitre:`La qualité`, section:``,
+      revoir:`les cinq éléments de la qualité (désignation, référence, dimensions, composition, marque) et les exemples concrets` },
+    { id:'I2', texte:`J'exprime une quantité avec l'unité de mesure adaptée`,
+      objectif:`choisir l'unité de mesure qui convient à une marchandise`,
+      chapitre:`La quantité`, section:`Unités de mesure`,
+      revoir:`le tableau des unités : nombre, poids, longueur, capacité et superficie` },
+    { id:'I3', texte:`Je calcule le poids brut, le poids net ou la tare`,
+      objectif:`distinguer le poids brut, le poids net et la tare, et calculer celui qui manque`,
+      chapitre:`La quantité`, section:`Poids brut, poids net et tare`,
+      revoir:`les trois formules, et le fait que la tare compte tous les emballages` }
+  ]},
+  { id:'C2', nom:`Reconnaître et calculer les réductions de prix`, indicateurs:[
+    { id:'I4', texte:`Je reconnais un rabais, une remise, une ristourne ou un escompte d'après sa raison`,
+      objectif:`reconnaître un rabais, une remise, une ristourne ou un escompte d'après sa raison`,
+      chapitre:`Le prix et les réductions`, section:`Tableau récapitulatif`,
+      revoir:`la raison de chaque réduction, le moment où on l'accorde, et la différence entre escompte conditionnel et inconditionnel` },
+    { id:'I5', texte:`Je calcule le montant d'une réduction et le prix net`,
+      objectif:`calculer le montant d'une réduction et le prix net, après avoir vérifié sa condition`,
+      chapitre:`Le prix et les réductions`, section:`Exercice : Calcul du prix net après réduction`,
+      revoir:`les formules « réduction = prix brut × taux ÷ 100 » et « prix net = prix brut − réduction »` }
+  ]}
+];
 
 const LEVELS = [
 /* ---------------------------------------------------------------- 1 */
 {
   icon:'📋', color:'var(--blue)', title:`Décrire la marchandise`,
   short:`Qualité et quantité : ce que l'on commande exactement`,
-  objectives:[
-    `reconnaître les 5 éléments qui décrivent la qualité d'un produit ;`,
-    `choisir l'unité de mesure qui convient à une marchandise ;`,
-    `comprendre pourquoi une commande imprécise provoque des erreurs de livraison.`
-  ],
   theory:`<p>Avant de parler de prix, le vendeur et l'acheteur doivent être d'accord sur <b>ce qui est vendu</b> et sur <b>la quantité</b>.</p>
-  <p><b>La qualité</b> est l'ensemble des caractéristiques qui identifient précisément un produit. Elle se décrit avec 5 éléments :</p>
+  <p><b>La qualité</b> est l'ensemble des caractéristiques qui identifient précisément un produit :</p>
   <table class="mini-table"><tr><th>Élément</th><th>Ce qu'il précise</th></tr>
   <tr><td>Désignation</td><td>le nom du produit</td></tr>
-  <tr><td>Référence</td><td>le code unique du produit : code interne du magasin (SKU, <i>Stock Keeping Unit</i>, « unité de gestion de stock ») ou code-barres (EAN, <i>European Article Numbering</i>, 13 chiffres)</td></tr>
+  <tr><td>Référence</td><td>le code unique du produit (code interne SKU ou code-barres EAN)</td></tr>
   <tr><td>Dimensions</td><td>la taille, le format, la capacité</td></tr>
   <tr><td>Composition</td><td>les matériaux, les ingrédients</td></tr>
   <tr><td>Marque</td><td>le fabricant ou la gamme</td></tr></table>
@@ -535,9 +584,9 @@ const LEVELS = [
   <tr><td>Capacité</td><td>ml, cl, l</td></tr>
   <tr><td>Superficie</td><td>m², ha (hectare)</td></tr></table>`,
   example:`Une trottinette électrique vendue en ligne :<br>• désignation : trottinette électrique pliable<br>• marque : Volta<br>• référence : VX2-350-GR<br>• dimensions : 108 × 43 cm, roues de 10 pouces<br>• composition : cadre en aluminium<br>La quantité commandée s'exprime ici en <b>nombre</b> : 1 pièce.`,
-  bonus:`Sur un code-barres EAN, les trois premiers chiffres indiquent l'organisme qui a attribué le code. Les codes qui commencent par <b>540 à 549</b> sont attribués en Belgique et au Luxembourg : cela ne prouve pas que le produit y a été fabriqué, seulement que l'entreprise y a enregistré son code.`,
+  bonus:`Sur un code-barres EAN (13 chiffres), les trois premiers chiffres indiquent l'organisme qui a attribué le code. Les codes qui commencent par <b>540 à 549</b> sont attribués en Belgique et au Luxembourg : cela ne prouve pas que le produit y a été fabriqué, seulement que l'entreprise y a enregistré son code.`,
   questions:[
-    { type:'match', pts:10,
+    { type:'match', ind:'I1', pts:10,
       text:`Une librairie commande un sac à dos scolaire. Associe chaque information de la fiche produit à l'élément de la qualité qu'elle décrit.`,
       pairs:[
         {t:`Sac à dos scolaire`, a:`Désignation`},
@@ -546,11 +595,17 @@ const LEVELS = [
         {t:`45 × 30 × 18 cm, 28 litres`, a:`Dimensions`},
         {t:`Polyester recyclé, fond renforcé`, a:`Composition`}
       ],
-      distractors:[`Quantité`, `Prix`, `Conditions de livraison`],
+      distractors:[`Quantité`, `Prix`, `Réduction`],
       hint:`Pour chaque ligne restante, demande-toi : est-ce un nom, un code, une mesure, une matière ou un fabricant ?`,
       explain:`Les cinq éléments ensemble permettent au fournisseur de livrer exactement ce sac-là, et pas un modèle voisin. « 28 litres » est une capacité : elle fait partie des dimensions du produit, pas de la quantité commandée.` },
 
-    { type:'sort', pts:16, zones:[`⚖️ Poids`, `🧴 Capacité`, `📏 Longueur`, `📐 Superficie`],
+    { type:'qcm', ind:'I1', pts:4,
+      text:`Le secrétariat d'une école commande par téléphone « 20 cartouches d'encre noire ». Le fournisseur livre bien 20 cartouches… qui ne rentrent pas dans l'imprimante de l'école. Quelle information manquait dans la commande ?`,
+      options:[`La référence exacte des cartouches`, `Le nombre de cartouches commandées`, `Le prix unitaire des cartouches`, `Le poids net du colis`], correct:0,
+      hint:`La quantité livrée était-elle correcte ? Si oui, le problème vient-il du nombre… ou de l'identification précise du produit ?`,
+      explain:`Le fournisseur a livré la bonne quantité, mais pas le bon modèle. Seule la référence, le code unique du produit, permet de trouver une cartouche compatible parmi des centaines de modèles. Le prix et le poids ne disent pas quel modèle livrer.` },
+
+    { type:'sort', ind:'I2', pts:16, zones:[`⚖️ Poids`, `🧴 Capacité`, `📏 Longueur`, `📐 Superficie`],
       text:`Un grossiste reçoit des commandes très différentes. Range chaque marchandise selon l'unité de mesure la plus adaptée pour exprimer la quantité commandée.`,
       items:[
         {t:`Pommes de terre en vrac`, z:0}, {t:`Sable pour un chantier`, z:0},
@@ -561,44 +616,33 @@ const LEVELS = [
       hint:`Imagine comment on mesure chaque marchandise : sur une balance, dans un récipient, avec un mètre ruban, ou en calculant une surface au sol ?`,
       explain:`On pèse les produits en vrac (kg, t), on mesure les liquides en litres, on vend au mètre ce qui se déroule, et on commande en m² ce qui recouvre une surface.` },
 
-    { type:'qcm', pts:4,
-      text:`Le secrétariat d'une école commande par téléphone « 20 cartouches d'encre noire ». Le fournisseur livre bien 20 cartouches… qui ne rentrent pas dans l'imprimante de l'école. Quelle information manquait dans la commande ?`,
-      options:[`La référence exacte des cartouches`, `Le nombre de cartouches commandées`, `Le délai de livraison souhaité`, `Le moyen de paiement prévu`], correct:0,
-      hint:`La quantité livrée était-elle correcte ? Si oui, le problème vient-il du nombre… ou de l'identification précise du produit ?`,
-      explain:`Le fournisseur a livré la bonne quantité mais pas le bon modèle. Seule la référence, le code unique du produit, permet d'identifier une cartouche compatible parmi des centaines de modèles.` },
-
-    { type:'vf', pts:4,
-      text:`Un hôtel commande 5 lave-linge. Préciser la marque suffit : le fournisseur saura exactement quel modèle livrer.`,
+    { type:'vf', ind:'I2', pts:4,
+      text:`Un magasin de décoration commande <b>60 m²</b> de moquette pour un hôtel. Cette quantité est exprimée en unités de <b>longueur</b>.`,
       answer:false,
-      explain:`Une marque fabrique des dizaines de modèles différents. Il faut au minimum la référence du modèle, souvent complétée par les dimensions (capacité en kg, largeur en cm…).` },
+      explain:`Le m² (mètre carré) mesure une surface : c'est une unité de superficie. Le mètre, lui, est une unité de longueur, utilisée pour ce qui se déroule, comme un câble ou un tissu.` },
 
-    { type:'multi', pts:6,
+    { type:'multi', ind:'I1', pts:6,
       text:`Un traiteur commande des chaises pour sa salle de réception. Coche toutes les informations qui décrivent la <b>qualité</b> du produit.`,
-      options:[`Chaise empilable`, `Hêtre massif verni`, `Assise de 45 × 45 cm`, `40 pièces`, `Livraison dans les 5 jours`, `Paiement à 30 jours`], correct:[0,1,2],
-      hint:`Écarte d'abord tout ce qui répond à « combien ? », « quand ? » et « comment payer ? ». Que reste-t-il pour décrire la chaise elle-même ?`,
-      explain:`La désignation (chaise empilable), la composition (hêtre massif) et les dimensions (45 × 45 cm) décrivent la chaise. « 40 pièces » est la quantité ; le délai et le paiement sont d'autres conditions de vente.` }
+      options:[`Chaise empilable`, `Hêtre massif verni`, `Assise de 45 × 45 cm`, `40 pièces`, `34,90 € la pièce`, `Colis de 180 kg brut`], correct:[0,1,2],
+      hint:`Écarte d'abord tout ce qui répond à « combien ? » et à « quel prix ? ». Que reste-t-il pour décrire la chaise elle-même ?`,
+      explain:`La désignation (chaise empilable), la composition (hêtre massif) et les dimensions (45 × 45 cm) décrivent la chaise. « 40 pièces » et le poids du colis relèvent de la quantité ; 34,90 € est le prix.` }
   ]
 },
 /* ---------------------------------------------------------------- 2 */
 {
   icon:'⚖️', color:'var(--purple)', title:`Poids brut, poids net et tare`,
   short:`Peser la marchandise sans payer l'emballage`,
-  objectives:[
-    `distinguer le poids brut, le poids net et la tare ;`,
-    `calculer la donnée manquante avec la bonne formule ;`,
-    `savoir sur quel poids se calcule le prix d'une marchandise vendue au kilo.`
-  ],
   theory:`<p>Quand une marchandise est vendue au poids, la balance pèse souvent <b>la marchandise et son emballage</b> ensemble. On distingue donc trois poids :</p>
   <ul><li><b>Poids brut</b> = marchandise + emballage</li><li><b>Poids net</b> = marchandise seule</li><li><b>Tare</b> = emballage seul (caisse, sac, palette, bocal…)</li></ul>
   <table class="mini-table"><tr><th>Je cherche</th><th>Formule</th></tr>
   <tr><td>Poids brut</td><td>Poids net + Tare</td></tr>
   <tr><td>Poids net</td><td>Poids brut − Tare</td></tr>
   <tr><td>Tare</td><td>Poids brut − Poids net</td></tr></table>
-  <p>Quand la tare est donnée <b>par emballage</b>, on la multiplie d'abord par le nombre d'emballages. Elle peut aussi être donnée en <b>pourcentage</b> du poids brut : tare = poids brut × taux ÷ 100.</p>`,
+  <p>Quand la tare est donnée <b>par emballage</b>, on la multiplie par le nombre d'emballages. Elle peut aussi être donnée en <b>pourcentage</b> du poids brut : tare = poids brut × taux ÷ 100.</p>`,
   example:`Une caissette de cerises pèse 5,4 kg sur la balance ; la caissette vide pèse 0,4 kg.<br>Poids net = 5,4 − 0,4 = <b>5 kg</b> de cerises.<br>Pour 3 caissettes, la tare totale vaut 3 × 0,4 = 1,2 kg.`,
   bonus:`Pour peser un camion entier, on utilise un <b>pont-bascule</b> : le camion est pesé chargé à l'entrée, puis vide à la sortie. La différence donne le poids du chargement. Le mot « tare » vient de l'arabe, passé par l'italien : il désigne ce que l'on déduit.`,
   questions:[
-    { type:'sort', pts:12, zones:[`📦 Poids brut`, `🍎 Poids net`, `🧺 Tare`],
+    { type:'sort', ind:'I3', pts:12, zones:[`📦 Poids brut`, `🍎 Poids net`, `🧺 Tare`],
       text:`Au marché de gros, un employé note tout ce qu'il pèse. Range chaque pesée dans la bonne catégorie.`,
       items:[
         {t:`La palette complète posée sur la balance`, z:0}, {t:`Le sac de ciment tel qu'il sort du camion`, z:0},
@@ -608,59 +652,49 @@ const LEVELS = [
       hint:`Pour chaque pesée, pose-toi deux questions : pèse-t-on la marchandise ? pèse-t-on l'emballage ?`,
       explain:`Brut = les deux ensemble, net = la marchandise seule, tare = l'emballage seul. Un sac de ciment plein compte en poids brut, puisque le sac est pesé avec le ciment.` },
 
-    { type:'num', pts:4, unit:'kg', answer:1212,
+    { type:'num', ind:'I3', pts:4, unit:'kg', answer:1212,
       text:`Une friterie reçoit une livraison de pommes de terre.<br><span class="data">Poids brut : <b>1 250 kg</b><br>Tare (sacs en toile) : <b>38 kg</b></span><br>Quel est le poids net livré ?`,
       hint:`Le poids net, c'est la marchandise seule. Que dois-tu retirer du poids brut ?`,
       explain:`Poids net = poids brut − tare = 1 250 − 38 = 1 212 kg de pommes de terre.` },
 
-    { type:'num', pts:4, unit:'kg', answer:2.4,
-      text:`Un peintre pèse un seau de peinture neuf.<br><span class="data">Poids brut : <b>27,4 kg</b><br>Poids net (peinture) : <b>25 kg</b></span><br>Combien pèse le seau vide, c'est-à-dire la tare ?`,
-      hint:`La tare est ce qui reste quand on enlève la marchandise du poids total. Quelle soustraction faut-il poser ?`,
-      explain:`Tare = poids brut − poids net = 27,4 − 25 = 2,4 kg.` },
+    { type:'qcm', ind:'I3', pts:4,
+      text:`Un grossiste vend des oranges à <b>1,80 € le kilo net</b>. Il livre un restaurant scolaire :<br><span class="data">Poids brut : <b>500 kg</b><br>Cageots : <b>30 kg</b></span><br>Sur quel poids faut-il appliquer le prix de 1,80 € ?`,
+      options:[`470 kg`, `500 kg`, `530 kg`, `30 kg`], correct:0,
+      hint:`« Kilo net » : paie-t-on la marchandise seule, ou la marchandise avec son emballage ?`,
+      explain:`Le prix est fixé au kilo net : le restaurant paie uniquement les oranges, soit 500 − 30 = 470 kg (470 × 1,80 = 846 €). Payer sur 500 kg reviendrait à acheter les cageots au prix des oranges.` },
 
-    { type:'num', pts:6, unit:'kg', answer:13.89,
-      text:`Une épicerie fine expédie un colis de confitures.<br><span class="data">Nombre de bocaux : <b>24</b><br>Confiture par bocal : <b>370 g</b><br>Bocal vide : <b>190 g</b><br>Carton d'expédition vide : <b>450 g</b></span><br>Quel est le poids brut du colis, <b>en kilogrammes</b> ?`,
-      hint:`Calcule séparément le poids net (toute la confiture) et la tare (tous les bocaux + le carton). Rappel : 1 kg = 1 000 g.`,
-      explain:`Poids net = 24 × 370 g = 8 880 g. Tare = 24 × 190 g + 450 g = 5 010 g. Poids brut = 8 880 + 5 010 = 13 890 g, soit 13,89 kg.` },
+    { type:'vf', ind:'I3', pts:4,
+      text:`Un maraîcher livre <b>12 caisses</b> de tomates. Chaque caisse vide pèse <b>1,5 kg</b>. La tare de toute la livraison est donc de 1,5 kg.`,
+      answer:false,
+      explain:`La tare comprend tous les emballages : 12 × 1,5 = 18 kg. 1,5 kg n'est la tare que d'une seule caisse.` },
 
-    { type:'grid', pts:8,
+    { type:'grid', ind:'I3', pts:8,
       text:`Une jardinerie reçoit une palette de sacs de terreau.<br><span class="data">Poids brut : <b>850 kg</b><br>La tare (palette + film plastique) représente <b>4 %</b> du poids brut.</span><br>Complète les deux calculs.`,
       fields:[
         {label:`Tare`, answer:34, unit:'kg', hint:`Applique le taux au poids brut : poids brut × taux ÷ 100.`},
         {label:`Poids net`, answer:816, unit:'kg', hint:`Le poids net, c'est le poids brut sans l'emballage.`, total:true}
       ],
       hint:`Un indice apparaît sous chaque case à corriger.`,
-      explain:`Tare = 850 × 4 ÷ 100 = 34 kg. Poids net = 850 − 34 = 816 kg de terreau.` },
-
-    { type:'qcm', pts:4,
-      text:`Un grossiste vend des oranges à <b>1,80 € le kilo net</b>. Il livre un restaurant scolaire :<br><span class="data">Poids brut : <b>500 kg</b><br>Cageots : <b>30 kg</b></span><br>Sur quel poids faut-il appliquer le prix de 1,80 € ?`,
-      options:[`470 kg`, `500 kg`, `530 kg`, `30 kg`], correct:0,
-      hint:`« Kilo net » : paie-t-on la marchandise seule, ou la marchandise avec son emballage ?`,
-      explain:`Le prix est fixé au kilo net : le restaurant paie uniquement les oranges, soit 500 − 30 = 470 kg (470 × 1,80 = 846 €). Payer sur 500 kg reviendrait à acheter les cageots au prix des oranges.` }
+      explain:`Tare = 850 × 4 ÷ 100 = 34 kg. Poids net = 850 − 34 = 816 kg de terreau.` }
   ]
 },
 /* ---------------------------------------------------------------- 3 */
 {
   icon:'🏷️', color:'var(--orange)', title:`Les quatre réductions`,
-  short:`Rabais, remise, ristourne ou escompte ?`,
-  objectives:[
-    `reconnaître un rabais, une remise, une ristourne et un escompte dans une situation concrète ;`,
-    `distinguer les réductions commerciales de la réduction financière ;`,
-    `comprendre quand un escompte est conditionnel ou inconditionnel.`
-  ],
-  theory:`<p>Un vendeur peut diminuer son prix pour des raisons très différentes. Le nom de la réduction dépend de sa <b>raison</b>.</p>
-  <table class="mini-table"><tr><th>Réduction</th><th>Raison</th><th>Fréquence</th></tr>
-  <tr><td>Rabais</td><td>défaut de qualité, non-conformité à la commande, retard de livraison</td><td>exceptionnelle</td></tr>
-  <tr><td>Remise</td><td>quantité achetée, promotion ou soldes, client privilégié</td><td>habituelle</td></tr>
-  <tr><td>Ristourne</td><td>fidélité : calculée sur l'ensemble des achats d'une période</td><td>périodique</td></tr>
-  <tr><td>Escompte</td><td>paiement comptant ou avant l'échéance prévue</td><td>si le client paie vite</td></tr></table>
-  <p>Le rabais, la remise et la ristourne sont des réductions <b>commerciales</b> : elles concernent la vente. L'escompte est une réduction <b>financière</b> : il concerne le paiement.</p>
-  <p>L'escompte peut être :</p>
-  <ul><li><b>conditionnel</b> : le client ne le déduit que s'il paie dans le délai prévu ;</li><li><b>inconditionnel</b> : il est directement déduit sur la facture.</li></ul>`,
-  example:`<b>Rabais</b> : un frigo est livré avec la porte bosselée ; le vendeur retire 60 €.<br><b>Remise</b> : un restaurant achète 200 kg de frites surgelées et obtient 7 %.<br><b>Ristourne</b> : un fournisseur verse à une école 3 % du total de ses achats de l'année.<br><b>Escompte</b> : 2 % de réduction si la facture est payée dans les 7 jours au lieu de 30.`,
+  short:`Les reconnaître, puis les calculer`,
+  theory:`<p>Le nom d'une réduction dépend de sa <b>raison</b>.</p>
+  <table class="mini-table"><tr><th>Réduction</th><th>Raison</th><th>Quand ?</th></tr>
+  <tr><td>Rabais</td><td>défaut, non-conformité, retard de livraison</td><td>exceptionnellement</td></tr>
+  <tr><td>Remise</td><td>quantité, promotion ou soldes, client privilégié</td><td>régulièrement</td></tr>
+  <tr><td>Ristourne</td><td>fidélité : total des achats d'une période</td><td>périodiquement</td></tr>
+  <tr><td>Escompte</td><td>paiement comptant ou avant l'échéance</td><td>si le client paie vite</td></tr></table>
+  <p>Rabais, remise et ristourne sont des réductions <b>commerciales</b> ; l'escompte est une réduction <b>financière</b>. Un escompte <b>conditionnel</b> n'est déduit que si le client paie dans le délai prévu ; un escompte <b>inconditionnel</b> est directement déduit sur la facture.</p>
+  <p><b>Calcul</b> : Réduction = Prix brut × Taux ÷ 100, puis Prix net = Prix brut − Réduction. Vérifie d'abord la <b>condition</b> (« dès 500 € », « à partir de 20 kg ») : si elle n'est pas remplie, le client n'a pas droit à cette réduction.</p>
+  <p>Astuce : dans les cases de réponse, tu peux taper directement ton calcul, par exemple <span class="kbd">640*5/100</span>. Le résultat s'affiche sous la case.</p>`,
+  example:`Un vélo à 480,00 € est livré avec la selle déchirée : le magasin accorde un rabais de 10 %.<br>Rabais = 480 × 10 ÷ 100 = 48,00 €<br>Prix net = 480,00 − 48,00 = <b>432,00 €</b>`,
   bonus:`Pourquoi un vendeur accepte-t-il de perdre de l'argent avec un escompte ? Parce que recevoir son argent plus tôt lui évite d'emprunter à la banque pour payer ses propres fournisseurs, et diminue le risque que la facture ne soit jamais payée.`,
   questions:[
-    { type:'sort', pts:16, zones:[`🔧 Rabais`, `📦 Remise`, `🤝 Ristourne`, `⏱️ Escompte`],
+    { type:'sort', ind:'I4', pts:16, zones:[`🔧 Rabais`, `📦 Remise`, `🤝 Ristourne`, `⏱️ Escompte`],
       text:`Range chaque situation sous le nom de la réduction accordée.`,
       items:[
         {t:`Un canapé livré avec une tache sur l'accoudoir : le magasin retire 120 €`, z:0},
@@ -675,395 +709,58 @@ const LEVELS = [
       hint:`Pour chaque situation, cherche la RAISON : un problème ? une grosse commande ou une promotion ? un total sur une période ? un paiement rapide ?`,
       explain:`Rabais = compenser un problème (tache, retard). Remise = quantité ou promotion. Ristourne = total des achats d'une période, versé après coup. Escompte = récompense d'un paiement rapide (1 764 € = 1 800 € − 2 %).` },
 
-    { type:'qcm', pts:4,
+    { type:'qcm', ind:'I4', pts:4,
       text:`La boulangerie Lemaire reçoit une facture de son meunier.<br><span class="data">Montant : <b>2 000 €</b><br>Mention : « Escompte de <b>2 %</b> si paiement au plus tard le <b>15 octobre</b> »</span><br>La boulangerie paie le 20 octobre. Combien doit-elle payer ?`,
       options:[`2 000 €, car le délai de l'escompte est dépassé`, `1 960 €, car l'escompte est toujours accordé`, `1 960 €, car il s'agit d'une remise`, `2 040 €, car elle paie en retard`], correct:0,
       hint:`Cet escompte dépend-il d'une condition ? Cette condition est-elle encore respectée le 20 octobre ?`,
-      explain:`C'est un escompte conditionnel : il n'est accordé que si le paiement arrive au plus tard le 15 octobre. Le 20 octobre, la condition n'est plus remplie : la boulangerie paie les 2 000 € complets.` },
+      explain:`C'est un escompte conditionnel : il n'est accordé que si le paiement arrive au plus tard le 15 octobre. Le 20 octobre, la condition n'est plus remplie : la boulangerie paie les 2 000 € complets, sans supplément.` },
 
-    { type:'vf', pts:4,
-      text:`Un magasin de bricolage accorde un rabais à chaque client qui achète plus de 50 planches.`,
-      answer:false,
-      explain:`Une réduction liée à la quantité achetée est une remise. Le rabais est exceptionnel : il compense un défaut, une non-conformité ou un retard.` },
-
-    { type:'qcm', pts:4,
-      text:`Un magasin de sport veut récompenser les clubs qui lui restent fidèles toute la saison, sans savoir à l'avance combien chaque club achètera. Quelle réduction est la plus adaptée ?`,
-      options:[`Une ristourne versée en fin de saison, en fonction du total des achats du club`, `Un rabais accordé sur chaque facture`, `Un escompte pour chaque paiement rapide`, `Une remise sur le premier achat uniquement`], correct:0,
-      hint:`La récompense doit dépendre de tous les achats de la saison. À quel moment peut-on connaître ce total ?`,
-      explain:`On ne connaît le total des achats qu'à la fin de la période : c'est le principe de la ristourne. Elle récompense la fidélité sur la durée, alors qu'une remise porte sur une commande précise.` },
-
-    { type:'qcm', pts:4,
-      text:`Sur la facture de Fleurs Delvaux, la ligne « Escompte 2 % » est déjà retirée du total à payer, et aucune date limite n'est indiquée. Il s'agit d'un escompte…`,
-      options:[`inconditionnel`, `conditionnel`, `commercial`, `périodique`], correct:0,
-      hint:`Le client doit-il remplir une condition pour profiter de cette réduction ?`,
-      explain:`L'escompte est déduit d'office, sans condition de délai : il est inconditionnel. Et un escompte n'est jamais « commercial » ni « périodique » : c'est la réduction financière.` },
-
-    { type:'gaps', pts:14,
-      text:`Complète la synthèse avec les mots de la banque.`,
-      gaps:`Quand une marchandise arrive abîmée, le vendeur accorde un {0}. Une commande de 1 000 pièces peut donner droit à une {1}. Le total des achats d'une année permet d'obtenir une {2}. Ces trois réductions sont {3}. L'{4} est une réduction {5}, accordée quand le client paie {6}.`,
-      words:[`rabais`, `remise`, `ristourne`, `commerciales`, `escompte`, `financière`, `rapidement`],
-      distractors:[`conditionnelle`, `tare`, `en retard`],
-      hint:`Relis chaque phrase en cherchant son indice clé : un défaut, une quantité, une période, un paiement.`,
-      explain:`Défaut → rabais ; quantité → remise ; période → ristourne. Ces trois-là sont commerciales. L'escompte, lui, est financier : il récompense un paiement rapide.` }
-  ]
-},
-/* ---------------------------------------------------------------- 4 */
-{
-  icon:'🧮', color:'var(--accent)', title:`Calculer les réductions`,
-  short:`Du prix brut au net à payer`,
-  objectives:[
-    `calculer le montant d'une réduction à partir d'un taux ;`,
-    `vérifier si la condition d'une réduction est remplie ;`,
-    `enchaîner remise puis escompte dans le bon ordre ;`,
-    `comparer deux offres de fournisseurs.`
-  ],
-  theory:`<p>Une réduction s'exprime souvent en <b>pourcentage</b> (un taux). On calcule d'abord son montant, puis on le retire.</p>
-  <table class="mini-table"><tr><th>Calcul</th><th>Formule</th></tr>
-  <tr><td>Réduction</td><td>Base × Taux ÷ 100</td></tr>
-  <tr><td>Prix net</td><td>Base − Réduction</td></tr></table>
-  <p>Quand une facture comporte plusieurs réductions, on les calcule <b>en cascade</b>, chacune sur le résultat précédent :</p>
-  <ul><li>d'abord les réductions <b>commerciales</b> (rabais, remise), sur le prix brut : on obtient le <b>net commercial</b> ;</li><li>ensuite l'<b>escompte</b> (financier), sur le net commercial : on obtient le <b>net à payer</b>.</li></ul>
-  <p>Attention aux <b>conditions</b>, par exemple « remise dès 1 000 € » ou « escompte si paiement sous 15 jours ». Si la condition n'est pas remplie, la réduction vaut 0 €.</p>
-  <p>Astuce : dans les champs de réponse, tu peux taper directement ton calcul, par exemple <span class="kbd">640*5/100</span>. Le résultat s'affiche sous la case.</p>`,
-  example:`Prix brut : 640,00 € — remise 5 % — escompte 1 %.<br>Remise = 640 × 5 ÷ 100 = 32,00 € → net commercial = 608,00 €<br>Escompte = 608 × 1 ÷ 100 = 6,08 € → <b>net à payer = 601,92 €</b>`,
-  bonus:`Pourquoi l'escompte vient-il en dernier ? Parce qu'il récompense le paiement de la somme que le client doit réellement, c'est-à-dire le prix après les réductions commerciales. Calculer l'escompte sur le prix brut donnerait au client une réduction trop grande.`,
-  questions:[
-    { type:'num', pts:4, unit:'€', answer:57,
+    { type:'num', ind:'I5', pts:4, unit:'€', answer:57,
       text:`Un magasin de jardinage vend une tondeuse pendant sa foire de printemps.<br><span class="data">Prix brut : <b>380,00 €</b><br>Remise : <b>15 %</b></span><br>Quel est le montant de la remise ?`,
       hint:`Quelle base multiplies-tu par le taux ? N'oublie pas de diviser par 100.`,
       explain:`Remise = 380 × 15 ÷ 100 = 57,00 €. Le client paiera donc 380,00 − 57,00 = 323,00 €.` },
 
-    { type:'num', pts:4, unit:'€', answer:689.08,
-      text:`Un ordinateur portable d'exposition a le clavier légèrement rayé. Le vendeur accorde un rabais.<br><span class="data">Prix brut : <b>749,00 €</b><br>Rabais : <b>8 %</b></span><br>Quel est le prix net à payer ?`,
-      hint:`Deux étapes : calcule d'abord le montant du rabais, puis retire-le du prix brut.`,
-      explain:`Rabais = 749 × 8 ÷ 100 = 59,92 €. Prix net = 749,00 − 59,92 = 689,08 €.` },
+    { type:'gaps', ind:'I4', pts:14,
+      text:`Complète la synthèse avec les mots de la banque.`,
+      gaps:`Quand une marchandise arrive abîmée, le vendeur accorde un {0}. Une commande de 1 000 pièces peut donner droit à une {1}. Le total des achats d'une année permet d'obtenir une {2}. Ces trois réductions sont {3}. L'{4} est une réduction {5}, accordée quand le client paie {6}.`,
+      words:[`rabais`, `remise`, `ristourne`, `commerciales`, `escompte`, `financière`, `rapidement`],
+      distractors:[`commerciale`, `tare`, `en retard`],
+      hint:`Relis chaque phrase en cherchant son indice clé : un défaut, une quantité, une période, un paiement.`,
+      explain:`Défaut → rabais ; quantité → remise ; période → ristourne. Ces trois-là sont commerciales. L'escompte, lui, est financier : il récompense un paiement rapide.` },
 
-    { type:'qcm', pts:4,
+    { type:'qcm', ind:'I5', pts:4,
       text:`Un grossiste en boissons affiche : <b>« Remise de 6 % pour toute commande supérieure à 1 500 € »</b>.<br>Le café Le Coin Vert passe une commande de <span class="data" style="margin:0;padding:2px 8px"><b>1 460 €</b></span>. Quel est le montant de la remise ?`,
       options:[`0,00 €`, `87,60 €`, `90,00 €`, `14,60 €`], correct:0,
       hint:`Avant de calculer quoi que ce soit, vérifie la condition : 1 460 € est-il supérieur à 1 500 € ?`,
-      explain:`La commande n'atteint pas le seuil de 1 500 € : la remise ne s'applique pas. 87,60 € correspond à 6 % de 1 460 € — un calcul juste, mais pour une réduction à laquelle le café n'a pas droit.` },
+      explain:`La commande n'atteint pas le seuil de 1 500 € : la remise ne s'applique pas. 87,60 € correspond à 6 % de 1 460 € : un calcul juste, mais pour une réduction à laquelle le café n'a pas droit.` },
 
-    { type:'order', pts:10,
-      text:`Un apprenti comptable doit établir une facture avec une remise et un escompte. Place les étapes dans le bon ordre. Toutes les étiquettes ne sont pas utiles.`,
-      steps:[`Multiplier la quantité par le prix unitaire pour obtenir le prix brut`, `Calculer la remise sur le prix brut`, `Retirer la remise pour obtenir le net commercial`, `Calculer l'escompte sur le net commercial`, `Retirer l'escompte pour obtenir le net à payer`],
-      distractors:[`Calculer l'escompte sur le prix brut`, `Ajouter la remise au prix brut`],
-      hint:`Pars du montant de départ, et traite toujours la réduction commerciale avant la réduction financière.`,
-      explain:`Prix brut → remise → net commercial → escompte → net à payer. L'escompte se calcule sur le net commercial, jamais sur le prix brut, et une réduction se retire toujours.` },
-
-    { type:'grid', pts:10,
-      text:`<span class="data">Cycles Borinage SRL commande chez VéloGros :<br><b>6</b> vélos de ville à <b>420,00 €</b> pièce<br>Remise : <b>10 %</b> pour toute commande à partir de <b>2 000 €</b><br>Escompte : <b>2 %</b> si paiement dans les <b>8</b> jours<br>Cycles Borinage paie dans les 8 jours.</span><br>Complète la facture.`,
-      fields:[
-        {label:`Prix brut`, answer:2520, unit:'€', hint:`Quantité × prix unitaire.`},
-        {label:`Remise (10 %)`, answer:252, unit:'€', hint:`La condition des 2 000 € est-elle remplie ? Si oui, sur quelle base appliques-tu 10 % ?`},
-        {label:`Net commercial`, answer:2268, unit:'€', hint:`Prix brut − remise.`},
-        {label:`Escompte (2 %)`, answer:45.36, unit:'€', hint:`L'escompte se calcule sur quel montant : le prix brut ou le net commercial ?`},
-        {label:`Net à payer`, answer:2222.64, unit:'€', hint:`Net commercial − escompte.`, total:true}
-      ],
-      hint:`Un indice apparaît sous chaque case à corriger.`,
-      explain:`Prix brut = 6 × 420 = 2 520,00 € ; remise = 2 520 × 10 ÷ 100 = 252,00 € ; net commercial = 2 268,00 € ; escompte = 2 268 × 2 ÷ 100 = 45,36 € ; net à payer = 2 222,64 €.` },
-
-    { type:'num', pts:6, unit:'€', answer:31.2,
-      text:`Une école veut acheter <b>150 gourdes</b> isothermes. Elle compare deux offres :<br><span class="data">Offre A : <b>8,40 €</b> la gourde, remise de <b>12 %</b><br>Offre B : <b>7,60 €</b> la gourde, sans remise</span><br>Combien d'euros l'école économise-t-elle en choisissant l'offre la moins chère ?`,
-      hint:`Calcule le montant net de chaque offre pour les 150 gourdes, puis fais la différence entre les deux.`,
-      explain:`Offre A : 150 × 8,40 = 1 260,00 € ; remise 151,20 € → 1 108,80 €. Offre B : 150 × 7,60 = 1 140,00 €. L'offre A est la moins chère malgré un prix unitaire plus élevé : économie de 1 140,00 − 1 108,80 = 31,20 €.` }
-  ]
-},
-/* ---------------------------------------------------------------- 5 */
-{
-  icon:'💳', color:'var(--gold)', title:`Quand et comment payer`,
-  short:`Échéances, dates limites et moyens de paiement`,
-  objectives:[
-    `reconnaître les différentes échéances de paiement ;`,
-    `calculer une date limite de paiement (date de facture, fin de mois, comptant) ;`,
-    `calculer un acompte ;`,
-    `connaître la limite des paiements en espèces en Belgique.`
-  ],
-  theory:`<p>Les conditions de paiement disent <b>quand</b> (l'échéance) et <b>comment</b> (le moyen) le client doit payer.</p>
-  <table class="mini-table"><tr><th>Échéance</th><th>Signification</th></tr>
-  <tr><td>À la commande</td><td>on paie en passant la commande</td></tr>
-  <tr><td>Avec acompte</td><td>une partie (au moins 15 %) à la commande, le solde à la livraison</td></tr>
-  <tr><td>Contre remboursement</td><td>on paie au moment de la livraison</td></tr>
-  <tr><td>Au grand comptant</td><td>dès la réception de la facture</td></tr>
-  <tr><td>Au comptant</td><td>dans les 8 jours après la réception de la facture</td></tr>
-  <tr><td>À terme</td><td>après un délai (30 jours, 60 jours…)</td></tr>
-  <tr><td>À tempérament</td><td>en plusieurs mensualités</td></tr>
-  <tr><td>X jours date de facture</td><td>X jours après la date de la facture</td></tr>
-  <tr><td>X jours fin de mois</td><td>X jours après la date de la facture, puis on va au dernier jour de ce mois</td></tr></table>
-  <p><b>Compter les jours</b> : ajoute d'abord les jours qui restent dans le mois de départ, puis avance mois par mois. Pense aux mois de 30 et de 31 jours, et à février (28 jours en 2026 et en 2027).</p>
-  <p><b>Moyens de paiement</b> : espèces, virement bancaire, carte bancaire (Bancontact, Visa, Mastercard), domiciliation (prélèvement automatique), paiement mobile (Payconiq, Apple Pay, Google Pay), PayPal. En Belgique, un paiement en <b>espèces</b> est limité à <b>3 000 €</b> (règle générale).</p>`,
-  example:`• Facture reçue le 3 juin, payable <b>au comptant</b> : au plus tard le 3 + 8 = <b>11 juin</b>.<br>• Facture du 12 janvier 2026, <b>60 jours date de facture</b> : 19 jours jusqu'au 31 janvier, 28 jours en février (47 jours), il reste 13 jours → <b>13 mars 2026</b>.<br>• Facture du 5 octobre 2026, <b>30 jours fin de mois</b> : 5 octobre + 30 jours = 4 novembre → dernier jour du mois → <b>30 novembre 2026</b>.`,
-  bonus:`Pourquoi limiter les paiements en espèces ? Les billets ne laissent aucune trace : la limite complique la fraude fiscale et le blanchiment d'argent (faire passer de l'argent obtenu illégalement pour de l'argent propre). Au-delà de 3 000 €, on paie donc par virement ou par carte.`,
-  questions:[
-    { type:'match', pts:10,
-      text:`Associe chaque situation à l'échéance de paiement qui lui correspond.`,
-      pairs:[
-        {t:`Le client paie le livreur au moment où il reçoit son colis.`, a:`Contre remboursement`},
-        {t:`Le client verse 20 % en signant le bon de commande, et le reste à la livraison.`, a:`Avec acompte`},
-        {t:`Le client règle la facture le jour même où il la reçoit.`, a:`Au grand comptant`},
-        {t:`Le client paie son salon en 12 mensualités de 150 €.`, a:`À tempérament`},
-        {t:`La facture arrive un lundi ; le client doit avoir payé au plus tard le mardi de la semaine suivante.`, a:`Au comptant`}
-      ],
-      distractors:[`À la commande`, `À terme`],
-      hint:`Pour chaque situation, repère le moment du paiement : avant, pendant ou après la livraison ? En une fois ou en plusieurs ? Et compte les jours quand il y a un délai.`,
-      explain:`Du lundi au mardi de la semaine suivante, il y a 8 jours : c'est le paiement au comptant. Le « grand comptant », lui, ne laisse aucun délai après la réception de la facture.` },
-
-    { type:'num', pts:4, unit:'€', answer:1380,
-      text:`Un cuisiniste installe une cuisine équipée.<br><span class="data">Prix de la cuisine : <b>9 200,00 €</b><br>Acompte demandé : <b>15 %</b> du prix</span><br>Quel montant le client doit-il verser à la commande ?`,
-      hint:`L'acompte est une partie du prix : applique le taux au prix total.`,
-      explain:`Acompte = 9 200 × 15 ÷ 100 = 1 380,00 €. Le solde de 7 820,00 € sera payé à la livraison.` },
-
-    { type:'date', pts:6, answer:[30,6,2026], years:[2026,2027],
-      text:`<span class="data">Date de la facture : <b>12 mai 2026</b><br>Condition : <b>30 jours fin de mois</b></span><br>Quelle est la date limite de paiement ?`,
-      hint:`Ajoute d'abord 30 jours au 12 mai : dans quel mois tombes-tu ? Va ensuite au dernier jour de ce mois.`,
-      explain:`Mai compte 31 jours : du 12 au 31 mai, il y a 19 jours ; il en reste 11 → 11 juin. Dernier jour de juin : 30 juin 2026.` },
-
-    { type:'date', pts:6, answer:[4,1,2027], years:[2026,2027],
-      text:`<span class="data">Date de la facture : <b>20 novembre 2026</b><br>Condition : <b>45 jours date de facture</b></span><br>Quelle est la date limite de paiement ?`,
-      hint:`Novembre compte 30 jours et décembre 31. Compte d'abord les jours jusqu'à la fin de novembre, puis jusqu'à la fin de décembre… et regarde bien l'année.`,
-      explain:`Du 20 au 30 novembre : 10 jours. Décembre entier : 31 jours (41 jours au total). Il reste 4 jours → 4 janvier 2027. La date limite passe sur l'année suivante.` },
-
-    { type:'date', pts:4, answer:[6,3,2026], years:[2026,2027],
-      text:`<span class="data">Facture reçue le <b>26 février 2026</b><br>Condition : <b>au comptant</b></span><br>Quelle est la date limite de paiement ?`,
-      hint:`« Au comptant » laisse combien de jours ? Et combien de jours compte février 2026 ?`,
-      explain:`Au comptant = 8 jours après la réception. Février 2026 compte 28 jours : du 26 au 28, 2 jours ; il en reste 6 → 6 mars 2026.` },
-
-    { type:'multi', pts:6,
-      text:`Coche toutes les conditions qui laissent au client un <b>délai pour payer après avoir reçu la facture</b>.`,
-      options:[`Au comptant`, `60 jours date de facture`, `30 jours fin de mois`, `Au grand comptant`, `Contre remboursement`, `À la commande`], correct:[0,1,2],
-      hint:`Élimine les conditions où l'argent est versé avant la livraison, au moment de la livraison, ou dès que la facture arrive.`,
-      explain:`Au comptant (8 jours), 60 jours date de facture et 30 jours fin de mois laissent un délai. Au grand comptant, on paie dès la réception de la facture ; contre remboursement, à la livraison ; à la commande, avant même d'être livré.` },
-
-    { type:'vf', pts:4,
-      text:`Monsieur Dupuis achète une moto d'occasion à <b>4 200 €</b> chez un garagiste belge. Il peut payer la totalité en billets de banque.`,
-      answer:false,
-      explain:`En Belgique, un paiement en espèces est limité à 3 000 € (règle générale). Pour 4 200 €, Monsieur Dupuis doit payer le reste, au moins 1 200 €, par virement ou par carte.` }
-  ]
-},
-/* ---------------------------------------------------------------- 6 */
-{
-  icon:'🚚', color:'var(--blue)', title:`Livrer la marchandise`,
-  short:`Transport, frais de port et délais`,
-  objectives:[
-    `choisir la voie de transport adaptée à une marchandise ;`,
-    `distinguer une livraison franco d'une livraison en port dû ;`,
-    `calculer le coût d'une commande avec un seuil de livraison gratuite ;`,
-    `choisir un délai de livraison adapté.`
-  ],
-  theory:`<p>Les conditions de livraison précisent <b>comment</b> la marchandise voyage, <b>qui paie</b> le transport et <b>en combien de temps</b> elle arrive.</p>
-  <table class="mini-table"><tr><th>Voie</th><th>Moyens</th></tr>
-  <tr><td>Terrestre</td><td>camion, camionnette, vélo cargo</td></tr>
-  <tr><td>Ferroviaire</td><td>train de marchandises (fret)</td></tr>
-  <tr><td>Maritime</td><td>cargo, porte-conteneurs</td></tr>
-  <tr><td>Aérienne</td><td>avion cargo</td></tr>
-  <tr><td>Fluviale</td><td>péniche, barge (sur un fleuve ou un canal)</td></tr></table>
-  <table class="mini-table"><tr><th>Mention</th><th>Qui paie le transport ?</th></tr>
-  <tr><td>Franco de port</td><td>le vendeur (« livraison gratuite » pour le client)</td></tr>
-  <tr><td>Non franco (port dû)</td><td>l'acheteur</td></tr></table>
-  <p>La livraison franco est souvent réservée aux commandes qui atteignent un <b>montant minimum</b>.</p>
-  <p><b>Délais</b> : express (le lendemain), standard (2 à 5 jours ouvrables), économique (5 à 10 jours, moins cher), sur rendez-vous (gros articles : électroménager, meubles).</p>`,
-  example:`Un site de vêtements indique : « Livraison gratuite dès 35 € d'achat, sinon 4,50 € ».<br>• Commande de 41 € → franco : le vendeur paie le transport.<br>• Commande de 29 € → port dû : le client paie 29 + 4,50 = <b>33,50 €</b>.`,
-  bonus:`En Belgique, les « jours ouvrables » vont en principe du lundi au samedi, hors jours fériés. Mais beaucoup de transporteurs ne livrent que du lundi au vendredi : il faut lire leurs conditions. Pour les longues distances, un envoi combine souvent plusieurs voies : bateau jusqu'au port d'Anvers, puis train ou péniche, puis camion jusqu'au client.`,
-  questions:[
-    { type:'match', pts:12,
-      text:`Associe chaque transport à la voie utilisée.`,
-      pairs:[
-        {t:`Des conteneurs de jouets fabriqués en Chine arrivent au port d'Anvers`, a:`Maritime`},
-        {t:`Des médicaments urgents partent de Bruxelles pour Montréal et doivent arriver le lendemain`, a:`Aérienne`},
-        {t:`Des sacs de ciment sont déposés sur un chantier à Quaregnon`, a:`Terrestre`},
-        {t:`Un fleuriste livre ses bouquets dans le centre de Mons à vélo cargo`, a:`Terrestre`},
-        {t:`Des tonnes de céréales descendent le canal du Centre jusqu'au port de La Louvière`, a:`Fluviale`},
-        {t:`Des voitures neuves voyagent sur de longs wagons entre Gand et l'Italie`, a:`Ferroviaire`}
-      ],
-      distractors:[`Express`, `Port dû`],
-      hint:`Pour chaque cas, imagine le véhicule : il roule sur une route, sur des rails, il navigue en mer, sur une rivière ou un canal, ou il vole ?`,
-      explain:`Le vélo cargo est un transport terrestre, comme le camion. Mer → maritime ; fleuve ou canal → fluviale ; rails → ferroviaire ; avion → aérienne. « Express » est un délai et « port dû » une règle de paiement du transport : ce ne sont pas des voies.` },
-
-    { type:'vf', pts:4,
-      text:`« Franco de port » signifie que le transporteur accepte de livrer gratuitement, à ses propres frais.`,
-      answer:false,
-      explain:`Le transporteur est toujours payé ! « Franco de port » signifie que c'est le vendeur qui prend les frais de transport à sa charge : pour le client, la livraison est gratuite.` },
-
-    { type:'num', pts:4, unit:'€', answer:63.3,
-      text:`<span class="data">Conditions de Déco-Maison.be :<br>Livraison franco dès <b>60 €</b> d'achat ; sinon, frais de port de <b>5,90 €</b><br>Commande de Léa : un miroir à <b>42,50 €</b> et un coussin à <b>14,90 €</b></span><br>Combien Léa paie-t-elle au total, frais de port compris ?`,
-      hint:`Additionne d'abord les articles, puis compare ce total au seuil de 60 € : les frais de port s'ajoutent-ils ?`,
-      explain:`Articles : 42,50 + 14,90 = 57,40 €. C'est moins que 60 € : la commande n'est pas franco. Total : 57,40 + 5,90 = 63,30 €.` },
-
-    { type:'num', pts:4, unit:'€', answer:2.6,
-      text:`<span class="data">Conditions de Déco-Maison.be :<br>Livraison franco dès <b>60 €</b> d'achat ; sinon, frais de port de <b>5,90 €</b><br>Panier de Léa : <b>57,40 €</b> d'articles</span><br>Quel montant d'achat Léa doit-elle ajouter, <b>au minimum</b>, pour ne plus payer de frais de port ?`,
-      hint:`Combien manque-t-il à 57,40 € pour atteindre exactement le seuil ?`,
-      explain:`60,00 − 57,40 = 2,60 €. En ajoutant un article d'au moins 2,60 €, Léa obtient la livraison gratuite : c'est moins cher que 5,90 € de frais de port. C'est justement le but du seuil pour le vendeur : faire grossir le panier.` },
-
-    { type:'sort', pts:12, zones:[`🎁 Franco de port`, `💸 Port dû (non franco)`],
-      text:`Pour chaque commande, le transport est-il à charge du vendeur (franco) ou de l'acheteur (port dû) ?`,
-      items:[
-        {t:`« Livraison offerte sur tout le site » — commande de 12 €`, z:0},
-        {t:`Le fournisseur paie le camion qui livre jusqu'à l'entrepôt du client`, z:0},
-        {t:`« Livraison gratuite dès 100 € » — commande de 125 €`, z:0},
-        {t:`« Livraison gratuite dès 100 € » — commande de 80 €`, z:1},
-        {t:`Le client envoie son propre camion chercher la marchandise`, z:1},
-        {t:`« Frais de transport à charge du client » sur le bon de commande`, z:1}
-      ],
-      hint:`Pour chaque ligne, cherche qui sort l'argent du transport. Quand il y a un seuil, compare le montant de la commande à ce seuil.`,
-      explain:`Franco = le vendeur paie le transport (offert, ou seuil atteint). Port dû = l'acheteur paie : seuil non atteint, frais annoncés à charge du client, ou transport organisé par le client lui-même.` },
-
-    { type:'qcm', pts:4,
-      text:`Chez Métal-Pro, une machine est en panne et toute la production est arrêtée. La pièce de rechange doit arriver <b>au plus tard demain</b>. Quel délai de livraison faut-il choisir ?`,
-      options:[`Express`, `Standard`, `Économique`, `Sur rendez-vous`], correct:0,
-      hint:`Chaque heure d'arrêt coûte cher à l'entreprise. Quel délai garantit une arrivée le lendemain, même s'il est plus cher ?`,
-      explain:`Seule la livraison express garantit une arrivée le lendemain. Elle coûte plus cher, mais une production arrêtée coûte bien davantage. Le délai économique convient au contraire aux envois qui ne sont pas pressés.` }
-  ]
-},
-/* ---------------------------------------------------------------- 7 */
-{
-  icon:'🔍', color:'var(--pink)', title:`Analyser des conditions de vente`,
-  short:`Deux documents à décortiquer`,
-  objectives:[
-    `retrouver dans un document la rubrique qui répond à une question ;`,
-    `appliquer un seuil (« dès », « à partir de ») au bon montant ;`,
-    `repérer les erreurs dans une réponse rédigée.`
-  ],
-  theory:`<p>Les <b>CGV</b> (conditions générales de vente) sont le texte où un vendeur annonce ses règles : prix, livraison, paiement, réductions, réclamations. Avant d'acheter, un client ou un comptable doit savoir les lire.</p>
-  <p><b>Méthode en 4 étapes</b></p>
-  <ul><li><b>Repère la rubrique</b> qui répond à la question : livraison ? paiement ? réductions ?</li>
-  <li><b>Repère le type de client</b> : les règles changent souvent entre particuliers et professionnels.</li>
-  <li><b>Vérifie les seuils</b> : « dès 25 € » et « à partir de 25 € » incluent 25 € ; « plus de 25 € » et « supérieur à 25 € » ne l'incluent pas.</li>
-  <li><b>Vérifie les conditions de délai</b> : un escompte n'est accordé que si sa condition est remplie.</li></ul>
-  <p>Vocabulaire : la <b>TVA</b> est la taxe sur la valeur ajoutée. <b>TVAC</b> = TVA comprise (le prix affiché inclut la taxe) ; <b>HTVA</b> = hors TVA (la taxe s'ajoutera au prix).</p>`,
-  example:`Une pizzeria indique : « Livraison offerte à partir de 25 € ». Une commande de 25,00 € est livrée gratuitement ; une commande de 24,90 € ne l'est pas.`,
-  bonus:`En Belgique, quand un consommateur achète en ligne, il dispose en principe de 14 jours pour renoncer à son achat, sans devoir se justifier : c'est le droit de rétractation. Des CGV ne peuvent pas supprimer ce droit.`,
-  questions:[
-    { type:'multi', pts:6, doc:DOC_A,
-      text:`Lis les conditions de SportAvenue.be. Coche toutes les affirmations <b>correctes</b> sur la livraison.`,
-      options:[`Une commande de 95 € est livrée gratuitement`, `Une commande de 65 € coûte 5,50 € de frais de port`, `Un tapis de course (appareil de fitness) est livré sur rendez-vous`, `Une commande de 80 € exactement paie 5,50 € de frais de port`, `Toutes les commandes arrivent le lendemain`, `Les frais de port sont à charge du vendeur, quel que soit le montant`], correct:[0,1,2],
-      hint:`Relis la rubrique Livraison : que signifie « dès 80 € » pour une commande de 80 € pile ? Et quel délai est annoncé ?`,
-      explain:`« Dès 80 € » inclut 80 € : une commande de 80 € exactement est livrée franco. En dessous, 5,50 € de frais. Le délai annoncé est de 3 à 5 jours ouvrables, et les appareils de fitness sont livrés sur rendez-vous.` },
-
-    { type:'num', pts:6, unit:'€', answer:468.83, doc:DOC_A,
-      text:`Le club de basket de Jemappes commande des ballons pour <span class="data" style="margin:0;padding:2px 8px"><b>520,00 €</b></span> et paie la facture dans les 10 jours. Quel est le net à payer ?`,
-      hint:`Deux réductions sont possibles pour un club. Vérifie la condition de chacune, puis calcule en cascade : la remise d'abord, l'escompte ensuite.`,
-      explain:`520 € ≥ 400 € → remise de 8 % : 41,60 € → net commercial 478,40 €. Paiement dans les 10 jours → escompte de 2 % : 9,57 € → net à payer 468,83 €. La livraison est franco, car la commande dépasse 80 €.` },
-
-    { type:'date', pts:6, answer:[30,4,2026], years:[2026,2027], doc:DOC_A,
-      text:`L'école Saint-Joseph commande des chasubles chez SportAvenue.be. La facture est datée du <span class="data" style="margin:0;padding:2px 8px"><b>24 mars 2026</b></span>. Quelle est la date limite de paiement ?`,
-      hint:`Quelle condition de paiement s'applique aux écoles ? Ajoute les jours, puis va au dernier jour du mois obtenu.`,
-      explain:`Écoles : 30 jours fin de mois. 24 mars + 30 jours = 23 avril → dernier jour d'avril : 30 avril 2026.` },
-
-    { type:'qcm', pts:6, doc:DOC_A,
-      text:`Madame Petit, une particulière, commande un rameur (appareil de fitness) à <b>349,00 €</b>. Quelle affirmation est correcte ?`,
-      options:[`Elle paie à la commande, sans remise, et la livraison se fait sur rendez-vous`, `Elle obtient 8 % de remise et paie à 30 jours fin de mois`, `Elle paie 5,50 € de frais de port et obtient 2 % d'escompte`, `Elle paie à la livraison et reçoit une ristourne en fin d'année`], correct:0,
-      hint:`Vérifie trois choses dans l'ordre : la règle de paiement pour un particulier, le seuil de la remise, puis la règle pour les appareils de fitness.`,
-      explain:`Un particulier paie à la commande. 349 € n'atteint pas 400 € : pas de remise. L'escompte est réservé aux clubs et aux écoles. La commande dépasse 80 € : pas de frais de port, et un rameur est livré sur rendez-vous.` },
-
-    { type:'hunt', pts:12, doc:DOC_A,
-      text:`Kevin a répondu par écrit à la question « Explique les conditions de vente de SportAvenue.be ». Clique sur chaque phrase <b>fausse</b>. Une phrase correcte signalée à tort coûte 1 XP.`,
-      sentences:[
-        {t:`Les prix affichés comprennent déjà la TVA.`},
-        {t:`La livraison est gratuite pour toutes les commandes.`, err:true, fix:`Elle n'est franco qu'à partir de 80 € ; en dessous, 5,50 € de frais de port.`},
-        {t:`Un particulier paie au moment de la commande.`},
-        {t:`Un club qui paie dans les 10 jours reçoit une ristourne de 2 %.`, err:true, fix:`C'est un escompte (réduction financière pour paiement rapide), pas une ristourne.`},
-        {t:`La remise de 8 % récompense une commande d'au moins 400 €.`},
-        {t:`Un client a 30 jours pour signaler un article abîmé.`, err:true, fix:`Le délai de réclamation est de 10 jours après la réception.`},
-        {t:`Les appareils de fitness sont livrés sur rendez-vous.`}
-      ],
-      hint:`Compare chaque phrase de Kevin avec la rubrique correspondante du document, mot par mot : montant, délai, nom de la réduction.`,
-      explain:`Trois erreurs : la livraison n'est pas toujours gratuite (seuil de 80 €), la réduction pour paiement rapide est un escompte et non une ristourne, et le délai de réclamation est de 10 jours.` },
-
-    { type:'match', pts:10, doc:DOC_B,
-      text:`Lis les conditions de BricoPro Hainaut, puis choisis la bonne réponse à chaque question.`,
-      pairs:[
-        {t:`Qui paie le transport quand BricoPro livre sur un chantier ?`, a:`L'acheteur`},
-        {t:`Une facture datée du 3 mars 2026 doit être payée au plus tard le…`, a:`2 mai 2026`},
-        {t:`Un menuisier a acheté pour 18 000 € en 2026. Que reçoit-il ?`, a:`Une ristourne de 360 €`},
-        {t:`Une porte sur mesure coûte 2 400 €. Combien faut-il verser à la commande ?`, a:`720 €`},
-        {t:`Il manque 2 plinthes à la livraison. Que peut obtenir le client ?`, a:`Un rabais`}
-      ],
-      distractors:[`Le vendeur`, `31 mai 2026`, `Une remise de 360 €`, `360 €`, `Un escompte`],
-      hint:`Chaque question renvoie à une seule rubrique. Pour la date, compte 60 jours à partir du 3 mars (mars compte 31 jours, avril 30).`,
-      explain:`Port dû → l'acheteur paie. 3 mars + 60 jours = 2 mai 2026 (28 jours en mars, 30 en avril, puis 2). 2 % de 18 000 € = 360 € de ristourne. Acompte : 30 % de 2 400 € = 720 €. Livraison incomplète → rabais.` }
-  ]
-},
-/* ---------------------------------------------------------------- 8 */
-{
-  icon:'🏆', color:'var(--gold)', title:`Mission finale : la Jardinerie`,
-  short:`Toutes les conditions de vente dans un seul dossier`,
-  final:true,
-  objectives:[
-    `utiliser les 5 conditions de vente dans un même dossier ;`,
-    `calculer poids, réductions et date d'échéance sans rappel théorique ;`,
-    `contrôler une livraison et réagir à un problème.`
-  ],
-  theoryTitle:`Ton dossier`,
-  theory:`<p>Pas de rappel pour cette mission : c'est à toi de mobiliser tout ce que tu as appris.</p>
-  <p>Tu travailles au service des achats de la <b>Jardinerie Les Tilleuls SRL</b>. Tu contrôles une commande passée chez le fournisseur <b>AgriPlant SA</b> : 40 sacs de terreau et 12 pots en terre cuite. Toutes les données utiles sont rappelées dans chaque question.</p>
-  <p>À la fin, tu repartiras avec ta <b>fiche de contrôle</b> imprimable.</p>`,
-  questions:[
-    { type:'grid', pts:6,
-      text:`<span class="data">40 sacs de terreau universel « Verdor »<br>Poids net par sac : <b>25 kg</b><br>Emballage par sac : <b>0,3 kg</b></span><br>Le transporteur doit connaître le poids du chargement. Complète.`,
-      fields:[
-        {label:`Poids net total`, answer:1000, unit:'kg', hint:`Poids net d'un sac × nombre de sacs.`},
-        {label:`Tare totale`, answer:12, unit:'kg', hint:`Il faut compter tous les emballages, pas un seul.`},
-        {label:`Poids brut total`, answer:1012, unit:'kg', hint:`Marchandise + emballages.`, total:true}
-      ],
-      hint:`Un indice apparaît sous chaque case à corriger.`,
-      explain:`Poids net = 40 × 25 = 1 000 kg ; tare = 40 × 0,3 = 12 kg ; poids brut = 1 000 + 12 = 1 012 kg.` },
-
-    { type:'grid', pts:10,
-      text:`<span class="data">40 sacs de terreau à <b>7,80 €</b> le sac<br>12 pots en terre cuite à <b>18,50 €</b> pièce<br>Remise : <b>5 %</b> dès <b>500 €</b> d'achat<br>Escompte : <b>1,5 %</b> si paiement dans les 10 jours<br>La Jardinerie paie dans les 10 jours.</span><br>Contrôle la facture des marchandises (sans le transport).`,
-      fields:[
-        {label:`Prix brut`, answer:534, unit:'€', hint:`Deux articles : calcule chaque ligne, puis additionne.`},
-        {label:`Remise (5 %)`, answer:26.7, unit:'€', hint:`Le seuil de 500 € est-il atteint ? Si oui, applique 5 % au prix brut.`},
-        {label:`Net commercial`, answer:507.3, unit:'€', hint:`Prix brut − remise.`},
-        {label:`Escompte (1,5 %)`, answer:7.61, unit:'€', hint:`Sur quel montant se calcule l'escompte ?`},
-        {label:`Net à payer`, answer:499.69, unit:'€', hint:`Net commercial − escompte.`, total:true}
-      ],
-      hint:`Un indice apparaît sous chaque case à corriger.`,
-      explain:`Prix brut = 40 × 7,80 + 12 × 18,50 = 312,00 + 222,00 = 534,00 €. 534 € ≥ 500 € → remise = 26,70 € ; net commercial = 507,30 € ; escompte = 507,30 × 1,5 ÷ 100 = 7,61 € ; net à payer = 499,69 €.` },
-
-    { type:'qcm', pts:4,
-      text:`<span class="data">Transport par camion, franco dès <b>600 €</b> d'achat, sinon <b>45 €</b><br>Prix brut de la commande : <b>534,00 €</b><br>Remise : <b>5 %</b> dès <b>500 €</b> d'achat</span><br>Qui paie le transport de cette commande ?`,
-      options:[`La Jardinerie paie 45 €, car la commande n'atteint pas 600 €`, `AgriPlant paie, car la commande dépasse 500 €`, `AgriPlant paie, car le transport se fait par camion`, `Personne : le transport est gratuit si la Jardinerie paie dans les 10 jours`], correct:0,
-      hint:`Quel seuil concerne le transport ? Ne le confonds pas avec le seuil de la remise.`,
-      explain:`Le seuil de 500 € donne droit à la remise, pas à la livraison gratuite. Pour le transport, il faut atteindre 600 € : ce n'est pas le cas, la livraison est en port dû et la Jardinerie paie 45 €.` },
-
-    { type:'date', pts:6, answer:[30,9,2026], years:[2026,2027],
-      text:`<span class="data">Date de la facture : <b>18 août 2026</b><br>Condition : <b>30 jours fin de mois</b></span><br>Quelle est la date limite de paiement de la facture ?`,
-      hint:`Ajoute 30 jours au 18 août, puis va au dernier jour du mois obtenu. Combien de jours compte ce mois-là ?`,
-      explain:`Du 18 au 31 août : 13 jours ; il en reste 17 → 17 septembre. Dernier jour de septembre : 30 septembre 2026.` },
-
-    { type:'match', pts:10,
-      text:`Sur le bon de commande, chaque information relève d'une des cinq conditions de vente. Associe-les.`,
-      pairs:[
-        {t:`Terreau universel « Verdor » 50 l, réf. VD-50`, a:`Qualité`},
-        {t:`40 sacs`, a:`Quantité`},
-        {t:`7,80 € le sac, remise de 5 % dès 500 €`, a:`Prix et réductions`},
-        {t:`30 jours fin de mois`, a:`Conditions de paiement`},
-        {t:`Transport par camion, franco dès 600 €`, a:`Conditions de livraison`}
-      ],
-      distractors:[`Réclamations`, `Garantie`],
-      hint:`Pour chaque ligne, demande-toi à quelle question elle répond : quoi ? combien ? à quel prix ? quand payer ? comment livrer ?`,
-      explain:`Une commande complète répond aux cinq questions : quoi (qualité), combien (quantité), à quel prix (prix et réductions), quand et comment payer (paiement), comment et à quel coût livrer (livraison).` },
-
-    { type:'qcm', pts:4,
-      text:`À la livraison, tu contrôles la marchandise :<br><span class="data">Sacs commandés : <b>40</b><br>Sacs livrés : <b>38</b><br>Parmi les sacs livrés, <b>3</b> sont déchirés</span><br>Que peut demander la Jardinerie au fournisseur ?`,
-      options:[`Ne payer que les 38 sacs livrés et obtenir un rabais pour les 3 sacs déchirés`, `Une ristourne de fin d'année pour compenser`, `Un escompte supplémentaire de 1,5 %`, `Une remise, car elle a commandé plus de 500 €`], correct:0,
-      hint:`Le problème vient-il du paiement, de la fidélité, de la quantité achetée… ou d'un défaut dans la livraison ?`,
-      explain:`On ne paie que ce qui a été livré, et un défaut de qualité se compense par un rabais. La ristourne récompense la fidélité, l'escompte un paiement rapide, la remise une grosse commande : aucune ne répond à ce problème.` },
-
-    { type:'num', pts:6, unit:'€', answer:507.3,
-      text:`<span class="data">Net commercial de la facture : <b>507,30 €</b><br>Escompte : <b>1,5 %</b> si paiement dans les 10 jours suivant la date de facture (18 août 2026)<br>Date limite de paiement : <b>30 septembre 2026</b></span><br>Débordée, la comptable de la Jardinerie paie finalement le <b>25 septembre 2026</b>. Quel montant paie-t-elle pour les marchandises, sans compter le transport ?`,
-      hint:`Le 25 septembre, la facture est-elle encore dans le délai de l'escompte ? Et dans le délai de paiement ?`,
-      explain:`Le délai de l'escompte se terminait le 28 août : la Jardinerie n'y a plus droit. Elle paie à temps (avant le 30 septembre), mais le montant complet du net commercial : 507,30 €. Ce retard lui a coûté 7,61 €.` }
+    { type:'num', ind:'I5', pts:8, unit:'€', answer:427.5,
+      text:`Un torréfacteur livre du café en grains à un restaurant.<br><span class="data">Prix : <b>18,00 €</b> le kilo <b>net</b><br>Poids brut livré : <b>26 kg</b><br>Tare (sacs) : <b>1 kg</b><br>Remise : <b>5 %</b> à partir de <b>20 kg</b> net commandés</span><br>Quel est le prix net à payer ?`,
+      hint:`Trois étapes : le poids net d'abord (on ne paie pas les sacs), puis le prix brut, puis la remise si sa condition est remplie.`,
+      explain:`Poids net = 26 − 1 = 25 kg (au moins 20 kg : la remise s'applique). Prix brut = 25 × 18,00 = 450,00 €. Remise = 450 × 5 ÷ 100 = 22,50 €. Prix net = 450,00 − 22,50 = 427,50 €. Calculer sur 26 kg reviendrait à payer les sacs au prix du café.` }
   ]
 }
 ];
+
+/* ---------- Badges (6 à 8, les verrouillés restent visibles) ---------- */
+const BADGES = [
+  { id:'first',   ico:'🚀', name:'Premier contrat',        desc:'Terminer la mission 1', test:() => APP.done.includes(0) },
+  { id:'fiche',   ico:'📋', name:'Œil du contrôleur',      desc:'Fiche produit du sac à dos associée sans erreur', test:() => allStatus(0, t => t==='match', 'correct') },
+  { id:'balance', ico:'⚖️', name:'Balance d’or',           desc:'Tous les calculs de poids de la mission 2 justes du 1er coup', test:() => allStatus(1, t => t==='num' || t==='grid', 'correct') },
+  { id:'reduc',   ico:'🏷️', name:'Chasseur de réductions', desc:'Les 8 situations de réduction classées sans erreur', test:() => allStatus(2, t => t==='sort', 'correct') },
+  { id:'s5',      ico:'🔥', name:'En feu',                 desc:'5 réponses justes du 1er coup d’affilée', test:() => APP.bestStreak >= 5 },
+  { id:'predict', ico:'🎯', name:'Lucide',                 desc:'Prédire correctement son score sur une mission', test:() => APP.done.some(lv => predMatch(lv)) },
+  { id:'perfect', ico:'💯', name:'Sans faute',             desc:'100 % des XP sur une mission', test:() => APP.done.some(lv => levelStats(lv).pctXp >= 100) },
+  { id:'boss',    ico:'🧾', name:'Acheteur averti',        desc:'Terminer les 3 missions', test:() => APP.done.length === LEVELS.length }
+];
+
 </script>
 <script>
 /* =====================================================================
    MOTEUR — machine à états unique
    ===================================================================== */
 const TRACKING = {
-  appName: "Conditions de vente — Missions",
+  appName: META.title,
   totalNiveaux: LEVELS.length,
   sessionId: null,
   scriptUrl: "https://script.google.com/macros/s/AKfycbx9bRMVuHU2mgFLii1KcQXD3LdZahnDH1rf1cWv9RuDvQAt0l3VtLtxzmbH7MtpJWRjfA/exec"
@@ -1084,6 +781,54 @@ const DECALAGE = [2,0,3,1, 1,3,0,2, 3,1,2,0, 0,2,1,3, 2,3,0,1];
 LEVELS.forEach(lv => { lv.maxPoints = lv.questions.reduce((s,q) => s + q.pts, 0); });
 const TOTAL_XP = LEVELS.reduce((s,lv) => s + lv.maxPoints, 0);
 const TOTAL_Q  = LEVELS.reduce((s,lv) => s + lv.questions.length, 0);
+
+/* ---------- Critères et indicateurs (CONVENTIONS §4.11) ---------- */
+const IND = {};
+CRITERES.forEach(c => c.indicateurs.forEach(ind => { IND[ind.id] = Object.assign({ crit:c.id }, ind); }));
+const STATUT = {
+  atteint:    { ico:'✅', lab:'Atteint',                  cls:'st-ok'  },
+  encours:    { ico:'🟠', lab:"En cours d'acquisition",   cls:'st-mid' },
+  nonatteint: { ico:'❌', lab:'Non atteint',              cls:'st-ko'  }
+};
+const statutOf = r => r >= 0.8 ? 'atteint' : r >= 0.5 ? 'encours' : 'nonatteint';
+function indAcc(onlyLv){
+  const acc = {};
+  LEVELS.forEach((L,l) => { if (onlyLv != null && l !== onlyLv) return;
+    L.questions.forEach((Q,i) => {
+      const a = acc[Q.ind] || (acc[Q.ind] = { pts:0, max:0 });
+      a.max += Q.pts; const st = APP.qs[key(l,i)]; a.pts += (st && st.earned) || 0;
+    });
+  });
+  return acc;
+}
+function bilanIndicateurs(){
+  const acc = indAcc(null);
+  return CRITERES.map(c => {
+    const inds = c.indicateurs.map(ind => { const a = acc[ind.id] || { pts:0, max:0 }; const r = a.max ? a.pts / a.max : 0; return Object.assign({}, ind, { ratio:r, statut:statutOf(r) }); });
+    const tot = c.indicateurs.reduce((t, ind) => { const a = acc[ind.id] || { pts:0, max:0 }; return { pts:t.pts + a.pts, max:t.max + a.max }; }, { pts:0, max:0 });
+    const r = tot.max ? tot.pts / tot.max : 0;
+    return { id:c.id, nom:c.nom, ratio:r, statut:statutOf(r), indicateurs:inds };
+  });
+}
+function levelInds(lv){ const ids = []; LEVELS[lv].questions.forEach(Q => { if (!ids.includes(Q.ind)) ids.push(Q.ind); }); return ids; }
+function chapRef(ind){ return `« ${ind.chapitre} »` + (ind.section ? `, partie « ${ind.section} »` : ''); }
+
+/* ---------- Durée estimée (CONVENTIONS §3.9 et §3.14) ---------- */
+const TYPE_DUR = { qcm:40, vf:20, multi:60, num:90, date:90, sort:90, match:60, order:60, gaps:90, hunt:120 };
+function qDur(Q){ return Q.type === 'grid' ? 80 + 20 * Q.fields.length : TYPE_DUR[Q.type]; }
+function levelSec(lv){ return 60 + LEVELS[lv].questions.reduce((t,Q) => t + qDur(Q), 0); }
+const EST_SEC = LEVELS.reduce((s,_,lv) => s + levelSec(lv), 0);
+const EST_MIN = Math.round(EST_SEC / 60);
+
+/* ---------- Contrôle de cohérence des données (console) ---------- */
+(function checkData(){
+  const n = {};
+  LEVELS.forEach((L,l) => L.questions.forEach((Q,i) => {
+    if (!IND[Q.ind]) console.warn(`[DONNÉES] Mission ${l+1}, question ${i+1} : indicateur inconnu « ${Q.ind} »`);
+    n[Q.ind] = (n[Q.ind] || 0) + 1;
+  }));
+  Object.keys(IND).forEach(id => { if ((n[id] || 0) < 2) console.warn(`[DONNÉES] L'indicateur ${id} est mesuré par moins de 2 questions`); });
+})();
 
 const RANKS = [
   { f:0,   ico:'🎒', name:'Stagiaire' },
@@ -1204,21 +949,7 @@ function allStatus(lv, typeTest, status){
 }
 function anyQ(test){ return LEVELS.some((L,lv) => L.questions.some((Q,q) => { const st = APP.qs[key(lv,q)]; return st && test(Q, st); })); }
 
-/* ---------- Badges ---------- */
-const BADGES = [
-  { id:'first',    ico:'🚀', name:'Premier contrat',        desc:'Terminer la mission 1', test:() => APP.done.includes(0) },
-  { id:'balance',  ico:'⚖️', name:'Balance d’or',           desc:'Tous les calculs de poids de la mission 2 justes du 1er coup', test:() => allStatus(1, t => t==='num' || t==='grid', 'correct') },
-  { id:'reduc',    ico:'🏷️', name:'Chasseur de réductions', desc:'Mission 3 : toutes les questions justes du 1er coup', test:() => APP.done.includes(2) && levelStats(2).c === LEVELS[2].questions.length },
-  { id:'cascade',  ico:'🧮', name:'Roi de la cascade',      desc:'Un tableau remise + escompte complet juste du 1er coup', test:() => anyQ((Q,st) => Q.type==='grid' && Q.fields.length >= 5 && st.done && st.status==='correct') },
-  { id:'calendar', ico:'📅', name:'Maître du calendrier',   desc:'Toutes les dates de la mission 5 justes du 1er coup', test:() => allStatus(4, t => t==='date', 'correct') },
-  { id:'logistic', ico:'🚚', name:'Logisticien',            desc:'Mission 6 terminée avec au moins 85 % des XP', test:() => APP.done.includes(5) && levelStats(5).pctXp >= 85 },
-  { id:'lynx',     ico:'🔍', name:'Œil de lynx',            desc:'Chasse aux erreurs parfaite, sans fausse alerte', test:() => anyQ((Q,st) => Q.type==='hunt' && st.done && st.status==='correct') },
-  { id:'s5',       ico:'🔥', name:'En feu',                 desc:'5 réponses justes du 1er coup d’affilée', test:() => APP.bestStreak >= 5 },
-  { id:'s10',      ico:'⚡', name:'Inarrêtable',            desc:'10 réponses justes du 1er coup d’affilée', test:() => APP.bestStreak >= 10 },
-  { id:'predict',  ico:'🎯', name:'Lucide',                 desc:'Prédire correctement son score sur une mission', test:() => APP.done.some(lv => predMatch(lv)) },
-  { id:'perfect',  ico:'💯', name:'Sans faute',             desc:'100 % des XP sur une mission', test:() => APP.done.some(lv => levelStats(lv).pctXp >= 100) },
-  { id:'boss',     ico:'👑', name:'Directeur commercial',   desc:'Terminer les 8 missions', test:() => APP.done.length === LEVELS.length }
-];
+/* ---------- Badges (définis avec le contenu) ---------- */
 const toastQueue = []; let toastBusy = false;
 function checkBadges(){
   BADGES.forEach(b => { if (!APP.badges[b.id] && b.test()) { APP.badges[b.id] = true; toastQueue.push(b); } });
@@ -1453,13 +1184,13 @@ function openLevel(lv){
   if (!APP.validated) { showEmailModal(); return; }
   if (!isUnlocked(lv)) return;
   APP.level = lv;
+  if (!APP.done.includes(lv) && APP.timerLevel !== lv && !APP.completedExercises.includes(lv)) { startExerciseTimer(lv); APP.timerLevel = lv; }
   setScreen(APP.done.includes(lv) ? 'bilan' : 'brief');
 }
 function setPred(lv, v){ APP.pred[lv] = v; renderScreen(); }
 function startLevel(){
   const lv = APP.level; if (APP.pred[lv] == null) return;
   APP.q = APP.prog[lv] || 0;
-  if (APP.timerLevel !== lv && !APP.completedExercises.includes(lv)) { startExerciseTimer(lv); APP.timerLevel = lv; }
   setScreen('question');
 }
 function nextQ(){
@@ -1536,13 +1267,14 @@ function renderWelcome(){
   return `<div class="screen"><div class="hero">
     <div class="hero-emoji">🧾</div>
     <h1 class="hero-title">Conditions de vente</h1>
-    <div class="hero-sub">Missions d'entraînement — Économie d'entreprise, fiche 5</div>
-    <p class="hero-desc">Qualité, quantité, poids, réductions, paiement et livraison : tout ce qu'un vendeur et un acheteur doivent fixer avant de conclure une vente, en ${LEVELS.length} missions.</p>
+    <div class="hero-sub">${META.sub}</div>
+    <p class="hero-desc">${META.desc}</p>
     <div class="hero-stats">
       <div class="stat"><div class="stat-val">${LEVELS.length}</div><div class="stat-lbl">missions</div></div>
       <div class="stat"><div class="stat-val">${TOTAL_Q}</div><div class="stat-lbl">questions</div></div>
       <div class="stat"><div class="stat-val">${TOTAL_XP}</div><div class="stat-lbl">XP à gagner</div></div>
       <div class="stat"><div class="stat-val">${BADGES.length}</div><div class="stat-lbl">badges</div></div>
+      <div class="stat"><div class="stat-val">≈ ${EST_MIN}</div><div class="stat-lbl">⏱️ minutes</div></div>
     </div>
     <div class="who" id="whoami">${whoHtml()}</div>
     <button class="btn btn-primary" onclick="startApp()">Commencer ${ico('i-right')}</button>
@@ -1590,6 +1322,8 @@ function renderFinal(){
       ${rows}
       <tr class="tot"><td>Total</td><td class="ok">${c}</td><td class="h">${h}</td><td class="s">${s}</td><td></td><td>${APP.score}/${TOTAL_XP}</td></tr>
     </table></div>
+    ${renderCriteres()}
+    ${META.nextPart ? `<p class="next-part">${META.nextPart}</p>` : ''}
     ${lbButtons()}
     <div class="btn-row"><button class="btn btn-gold" onclick="restartAll()">${ico('i-redo')} Rejouer tout le parcours</button></div>
   </div>`;
@@ -1605,8 +1339,8 @@ function renderBrief(lv){
       <path d="M0 78 Q120 52 240 66 T480 58 T760 72 V96 H0 Z" fill="var(--c)" opacity=".14"/>
       <path d="M0 88 Q160 66 300 80 T560 74 T760 86 V96 H0 Z" fill="var(--c)" opacity=".10"/>
     </svg>
-    <div class="brief-head"><div class="b-ico">${L.icon}</div><div><h2>Mission ${lv+1} — ${L.title}</h2><div class="b-sub">${L.questions.length} questions — ${L.maxPoints} XP en jeu</div></div></div>
-    <div class="objectives"><h4>À la fin de cette mission, tu sauras…</h4><ul>${L.objectives.map(o => `<li>${o}</li>`).join('')}</ul></div>
+    <div class="brief-head"><div class="b-ico">${L.icon}</div><div><h2>Mission ${lv+1} — ${L.title}</h2><div class="b-sub">${L.questions.length} questions — ${L.maxPoints} XP en jeu — ≈ ${Math.round(levelSec(lv)/60)} min</div></div></div>
+    <div class="objectives"><h4>À la fin de cette mission, tu sauras…</h4><ul>${levelInds(lv).map(id => `<li>${IND[id].objectif}</li>`).join('')}</ul></div>
     <div class="theory"><h3>${L.theoryTitle || 'Rappel théorique'}</h3><div class="theory-text">${L.theory}</div>
       ${L.example ? `<div class="example"><div class="ex-t">Exemple</div><div class="ex-c">${L.example}</div></div>` : ''}
       ${L.bonus ? `<div class="bonus"><div class="ex-t">Pour aller plus loin</div><div class="ex-c">${L.bonus}</div></div>` : ''}
@@ -1761,33 +1495,37 @@ function renderBilan(lv){
       <tr><td>${r.n}</td><td class="ok">${r.c}</td><td class="h">${r.h}</td><td class="s">${r.s}</td></tr></table></div>
     <div class="q-dots" style="justify-content:center;margin-top:12px">${dots}</div>
     ${pred ? `<p class="pred-line">${pred}</p>` : ''}
-    ${last ? renderFiche(r) : ''}
+    ${renderLevelInds(lv)}
     <div class="btn-row">${next}</div>
   </div></div>`;
 }
-function renderFiche(r){
-  const today = new Date().toLocaleDateString('fr-BE');
-  return `<div class="fiche">
-    <h3>Fiche de contrôle de commande</h3>
-    <div class="f-name">🌱 Jardinerie Les Tilleuls SRL</div>
-    <table>
-      <tr><td>Fournisseur</td><td>AgriPlant SA</td></tr>
-      <tr><td>Contrôlée par</td><td>${esc(nameFromEmail())}</td></tr>
-      <tr><td>Poids brut transporté</td><td>1 012 kg (net 1 000 kg, tare 12 kg)</td></tr>
-      <tr><td>Prix brut</td><td>534,00 €</td></tr>
-      <tr><td>Remise 5 %</td><td>− 26,70 €</td></tr>
-      <tr><td>Net commercial</td><td>507,30 €</td></tr>
-      <tr><td>Escompte 1,5 % (paiement au plus tard le 28/08/2026)</td><td>− 7,61 €</td></tr>
-      <tr><td>Net à payer dans le délai d'escompte</td><td>499,69 €</td></tr>
-      <tr><td>Transport</td><td>port dû : 45,00 €</td></tr>
-      <tr><td>Échéance de paiement</td><td>30/09/2026</td></tr>
-      <tr><td>Contrôle de livraison</td><td>38 sacs livrés sur 40, dont 3 déchirés : payer 38 sacs, demander un rabais</td></tr>
-      <tr><td>Score de la mission</td><td>${r.earned} / ${r.max} XP</td></tr>
-    </table>
-    <div class="f-foot"><span>Institut Saint-Luc de Frameries</span><span>${today}</span></div>
-    <div class="stamp">CONTRÔLÉ</div>
+function renderLevelInds(lv){
+  const acc = indAcc(lv);
+  const rows = levelInds(lv).map(id => {
+    const ind = IND[id], a = acc[id], r = a.max ? a.pts / a.max : 0, s = statutOf(r);
+    return `<li><span class="li-st" title="${STATUT[s].lab}">${STATUT[s].ico}</span><div><div>${ind.texte}</div>${s !== 'atteint' ? `<div class="li-rev">📖 À revoir : ${chapRef(ind)}</div>` : ''}</div></li>`;
+  }).join('');
+  return `<div class="lvl-inds"><h4>${ico('i-target')} Tes objectifs de cette mission</h4><ul>${rows}</ul></div>`;
+}
+function renderCriteres(){
+  const B = bilanIndicateurs(), today = new Date().toLocaleDateString('fr-BE');
+  const todo = B.some(c => c.indicateurs.some(i => i.statut !== 'atteint'));
+  const crits = B.map(c => `<div class="crit">
+      <div class="crit-h"><span class="crit-n">${c.nom}</span><span class="stt ${STATUT[c.statut].cls}">${STATUT[c.statut].ico} ${STATUT[c.statut].lab} — ${Math.round(c.ratio*100)} %</span></div>
+      <ul class="ind-list">${c.indicateurs.map(i => `<li class="ind">
+        <div class="ind-row"><span>${STATUT[i.statut].ico} ${i.texte}</span><span class="ind-pct">${Math.round(i.ratio*100)} %</span></div>
+        ${i.statut !== 'atteint' ? `<div class="revoir">📖 À revoir dans ton cours : ${chapRef(i)} — ${i.revoir}.</div>` : ''}
+      </li>`).join('')}</ul>
+    </div>`).join('');
+  return `<div class="fiche crit-fiche">
+    <h3>Mon bilan par critères</h3>
+    <div class="f-name">🧾 ${META.title}</div>
+    <p class="f-who">${esc(nameFromEmail())}${APP.classe ? ' — ' + esc(APP.classe) : ''} — ${today}</p>
+    <div class="crit-legend"><span>✅ Atteint : 80 % et plus</span><span>🟠 En cours d'acquisition : 50 à 79 %</span><span>❌ Non atteint : moins de 50 %</span></div>
+    ${crits}
+    <p class="crit-foot">${todo ? 'Relis les passages indiqués dans ton cours, puis rejoue les missions concernées pour vérifier que c\'est acquis.' : 'Tous les indicateurs sont atteints : cette partie du cours est maîtrisée.'}</p>
   </div>
-  <div class="btn-row"><button class="btn btn-ghost" onclick="window.print()">${ico('i-print')} Imprimer ma fiche</button></div>`;
+  <div class="btn-row"><button class="btn btn-ghost" onclick="window.print()">${ico('i-print')} Imprimer mon bilan</button></div>`;
 }
 
 /* =====================================================================
